@@ -2,5 +2,6 @@
 
 return [
     'app-id' => 'beejee-test',
-    'controllersNamespace' => 'App\\controllers\\'
+    'controllersNamespace' => 'App\\controllers\\',
+    'migrationsPath' => __DIR__ . '\\..\\console\\migrations'
 ];

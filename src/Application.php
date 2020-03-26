@@ -4,6 +4,7 @@ namespace App\src;
 
 use App\src\database\Config;
 use App\src\database\Connection;
+use App\src\database\Migration;
 use App\src\http\Request;
 
 class Application
@@ -43,6 +44,20 @@ class Application
     public function getRequest()
     {
         return $this->request;
+    }
+
+    public function getMigrations() : array
+    {
+        $migrationsPath = $this->config['migrationsPath'];
+        $migrationList = [];
+        foreach (scandir($migrationsPath) as $migration){
+            if($migration === '.' || $migration === '..') {
+                continue;
+            }
+            $fileName = $migrationsPath . DIRECTORY_SEPARATOR . $migration;
+            $migrationList[] = new Migration($fileName, $this->connection);
+        }
+        return $migrationList;
     }
 
     private function setControllerFromRoute(string $route) : void
