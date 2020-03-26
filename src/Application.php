@@ -9,6 +9,8 @@ use App\src\http\Request;
 
 class Application
 {
+    private static $instance;
+
     private array $config;
 
     private string $controllersNamespace;
@@ -19,14 +21,26 @@ class Application
 
     private ControllerAbstract $controller;
 
-
-    public function __construct(array $config)
+    private function __construct(array $config)
     {
         $this->config = $config;
         $this->controllersNamespace = $config['controllersNamespace'];
         $dbConfig = $this->config['db'];
         $this->connection = new Connection(new Config($dbConfig));
         $this->request = new Request();
+    }
+
+    public static function init(array $config)
+    {
+        if(self::$instance === null) {
+            self::$instance = new self($config);
+        }
+        return self::$instance;
+    }
+
+    public static function app() : self
+    {
+        return self::$instance;
     }
 
     public function run()

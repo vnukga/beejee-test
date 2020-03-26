@@ -1,5 +1,6 @@
 <?php
 
+use App\models\Administrator;
 use App\src\Application;
 
 $root = __DIR__ . '/../';
@@ -18,19 +19,6 @@ foreach(scandir($configDir) as $configFile){
 
 $application = Application::init($config);
 $connection = $application->getConnection();
-$migrations = $application->getMigrations();
 
-$createMigrationTableQuery = <<<SQL
-    CREATE TABLE IF NOT EXISTS migrations (
-        name varchar(255) not null,
-        time timestamp default NOW()
-    )
-SQL;
-
-$connection->query($createMigrationTableQuery);
-
-foreach($migrations as $migration) {
-    $migration->apply();
-    $migration->getMessage();
-}
-
+$administrator = new Administrator();
+var_dump($administrator->create('admin', '123'));

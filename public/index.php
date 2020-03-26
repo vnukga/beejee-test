@@ -16,5 +16,5 @@ foreach(scandir($configDir) as $configFile){
 }
 
 
-$application = new Application($config);
+$application = Application::init($config);
 $application->run();
