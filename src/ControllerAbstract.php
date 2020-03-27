@@ -43,6 +43,11 @@ abstract class ControllerAbstract
         $this->response->send();
     }
 
+    public function sendAjax($content){
+        $this->response->setContent(json_encode($content));
+        $this->response->send(true);
+    }
+
     public function getResponse()
     {
         return $this->response;

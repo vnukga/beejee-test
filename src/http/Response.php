@@ -36,9 +36,12 @@ class Response
         return $this;
     }
 
-    public function send()
+    public function send(bool $isJson = false)
     {
         header('HTTP/1.1 ' . $this->statusCode);
+        if($isJson){
+            $this->addHeader('Content-Type: application/json');
+        }
         foreach ( $this->headers as $header ) {
             header($header);
         }

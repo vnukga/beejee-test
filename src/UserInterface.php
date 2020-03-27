@@ -10,5 +10,9 @@ interface UserInterface
 
     public function isGuest() : bool;
 //
-//    public function logout() : void;
+    public function logout() : void;
+
+    public function setIsGuest(bool $isGuest) : void;
+
+    public function getUsername()  : ?string;
 }

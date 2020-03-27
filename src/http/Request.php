@@ -83,6 +83,11 @@ class Request
         return $this->server['REQUEST_METHOD'] === 'POST' ? true : false;
     }
 
+    public function isAjax() : bool
+    {
+        return $this->server['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+    }
+
     public function cookie() : Cookie
     {
         return $this->cookie;

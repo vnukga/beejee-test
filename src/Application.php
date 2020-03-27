@@ -53,10 +53,11 @@ class Application
         $route = $this->request->getRoute() ?? 'index';
         $this->authorizeUserFromSession();
         $this->setControllerFromRoute($route);
-        if(!$this->filter($route)) {
+        if($this->filter($route) && $route !== 'index') {
+            $this->controller->getResponse()->redirect('/index');
+        } else {
             $this->controller->run();
         }
-        $this->controller->getResponse()->redirect('/index');
     }
 
     private function authorizeUserFromSession() : void

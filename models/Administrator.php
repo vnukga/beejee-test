@@ -17,6 +17,8 @@ class Administrator extends ModelAbstract implements UserInterface
 
     private $isGuest = true;
 
+    private array $errors;
+
     public function fields(): array
     {
         return [
@@ -57,12 +59,31 @@ class Administrator extends ModelAbstract implements UserInterface
     {
         $administrator = $this->findOne(['login' => $login]);
         if(!$administrator) {
+            $this->setErrors();
             return;
         }
         if ($administrator->verifyPassword($password)) {
             $this->isGuest = false;
             Application::app()->getRequest()->session()->startUserSession($administrator->login);
+        } else {
+            $this->setErrors();
         }
+    }
+
+    private function setErrors() : void
+    {
+        $this->errors = [
+            'login' => 'Логин или пароль введены неверно!',
+            'password' => ''
+        ];
+    }
+
+    public function getErrors() : ?array
+    {
+        if(isset($this->errors)) {
+            return $this->errors;
+        }
+        return null;
     }
 
     public function logout() : void
@@ -84,7 +105,7 @@ class Administrator extends ModelAbstract implements UserInterface
         $this->isGuest = $isGuest;
     }
 
-    public function getUsername()
+    public function getUsername() : ?string
     {
         return $this->login;
     }

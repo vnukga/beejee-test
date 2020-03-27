@@ -23,6 +23,7 @@ class Session
     {
         session_unset();
         session_destroy();
+        $this->values = $_SESSION;
     }
 
     public function getUserSession() : ?string
