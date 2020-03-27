@@ -43,5 +43,12 @@ class Response
             header($header);
         }
         echo $this->content;
+        exit();
+    }
+
+    public function redirect(string $url)
+    {
+        header ('Location: ' . $url);
+        exit();
     }
 }

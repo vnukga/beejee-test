@@ -6,6 +6,7 @@ namespace App\src\database;
 
 use PDO;
 use PDOStatement;
+use stdClass;
 
 class Connection
 {
@@ -132,7 +133,7 @@ class Connection
         $this->prepare();
     }
 
-    public function execute()
+    public function execute($className = stdClass::class)
     {
         if(!$this->preparedQuery){
             $result = $this->dbh->query($this->query);
@@ -140,7 +141,7 @@ class Connection
             if(!$result) {
                 return null;
             }
-            return $result->fetchObject();
+            return $result->fetchObject($className);
         }
         if($this->preparedQuery->execute()){
             $this->preparedQuery = null;

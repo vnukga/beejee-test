@@ -21,4 +21,4 @@ $application = Application::init($config);
 $connection = $application->getConnection();
 
 $administrator = new Administrator();
-var_dump($administrator->create('admin', '123'));
+$administrator->create('admin', '123');

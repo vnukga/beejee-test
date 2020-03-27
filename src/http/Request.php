@@ -10,20 +10,26 @@ class Request
 
     private array $server;
 
-    private ?array $cookies;
+    private Cookie $cookie;
 
-    private ?array $session;
+    private Session $session;
 
     private ?array $files;
+
+    private ?string $domain;
+
+    private string $urlPrefix;
 
     public function __construct()
     {
         $this->post = $_POST;
         $this->get = $_GET;
         $this->server = $_SERVER;
-        $this->cookies = $_COOKIE;
-        $this->session = $_SESSION;
+        $this->cookie = new Cookie();
+        $this->session = new Session();
         $this->files = $_FILES;
+        $this->domain = $_SERVER['SERVER_NAME'];
+        $this->urlPrefix = $_SERVER['HTTPS'] ? 'https://' : 'http://';
     }
 
     public function get(string $parameter = null)
@@ -53,14 +59,37 @@ class Request
         return substr($requestUri, 1);
     }
 
-    public function getRoute()
+    public function getRoute() : ?string
     {
         $requestUri = $this->getRequestUri();
+        if(strlen($requestUri) === 0){
+            return null;
+        }
         $argsPosition = stripos($requestUri, '?');
         if($argsPosition > 0) {
             $route = substr($requestUri, 0, $argsPosition);
             return $route;
         }
         return $requestUri;
+    }
+
+    public function getHomeUrl()
+    {
+        return $this->urlPrefix . $this->domain;
+    }
+
+    public function isPost() : bool
+    {
+        return $this->server['REQUEST_METHOD'] === 'POST' ? true : false;
+    }
+
+    public function cookie() : Cookie
+    {
+        return $this->cookie;
+    }
+
+    public function session() : Session
+    {
+        return $this->session;
     }
 }

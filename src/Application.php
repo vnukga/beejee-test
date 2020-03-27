@@ -2,9 +2,11 @@
 
 namespace App\src;
 
+use App\models\Administrator;
 use App\src\database\Config;
 use App\src\database\Connection;
 use App\src\database\Migration;
+use App\src\filters\FilterInterface;
 use App\src\http\Request;
 
 class Application
@@ -21,6 +23,8 @@ class Application
 
     private ControllerAbstract $controller;
 
+    private UserInterface $user;
+
     private function __construct(array $config)
     {
         $this->config = $config;
@@ -28,6 +32,7 @@ class Application
         $dbConfig = $this->config['db'];
         $this->connection = new Connection(new Config($dbConfig));
         $this->request = new Request();
+        $this->user = new Administrator($this->connection);
     }
 
     public static function init(array $config)
@@ -45,9 +50,47 @@ class Application
 
     public function run()
     {
-        $route = $this->request->getRoute();
+        $route = $this->request->getRoute() ?? 'index';
+        $this->authorizeUserFromSession();
         $this->setControllerFromRoute($route);
-        return $this->controller->run();
+        if(!$this->filter($route)) {
+            $this->controller->run();
+        }
+        $this->controller->getResponse()->redirect('/index');
+    }
+
+    private function authorizeUserFromSession() : void
+    {
+        if($login = $this->request->session()->getUserSession()){
+            $user = $this->user->findOne(['login' => $login]);
+            if($user){
+                $this->user = $user;
+                $this->user->setIsGuest(true);
+            }
+        }
+    }
+
+    private function filter(string $route)
+    {
+        $filters = $this->getFilters();
+        foreach ($filters as $filter) {
+            if($filter->run($route)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @return FilterInterface[]
+     */
+    public function getFilters()
+    {
+        $filters = [];
+        foreach ($this->config['filters'] as $filter){
+            $filters[] = new $filter['class'];
+        }
+        return $filters;
     }
 
     public function getConnection()
@@ -58,6 +101,16 @@ class Application
     public function getRequest()
     {
         return $this->request;
+    }
+
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    public function getFilterConfig(string $filter)
+    {
+        return $this->config['filters'][$filter];
     }
 
     public function getMigrations() : array
