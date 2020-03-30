@@ -1,15 +1,22 @@
 <?php
 
-
 namespace App\controllers;
-
 
 use App\models\Task;
 use App\src\ControllerAbstract;
 
+/**
+ * Class TaskUpdateController
+ *
+ * Updates task
+ * @package App\controllers
+ */
 class TaskUpdateController extends ControllerAbstract
 {
-    public function run()
+    /**
+     * Running the controller
+     */
+    public function run() : void
     {
         $id = $this->request->getParameterFromRequest('id');
         if($id){

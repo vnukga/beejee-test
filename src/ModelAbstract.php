@@ -3,15 +3,33 @@
 
 namespace App\src;
 
-
 use App\src\database\Connection;
 
+/**
+ * Abstract model's class
+ * @package App\src
+ */
 abstract class ModelAbstract
 {
+    /**
+     * Model's entity's id
+     *
+     * @var int
+     */
     public int $id;
 
+    /**
+     * Connection instance
+     *
+     * @var Connection
+     */
     public Connection $connection;
 
+    /**
+     * Model's errors
+     *
+     * @var array
+     */
     protected array $errors;
 
     public function __construct(Connection $connection = null)
@@ -27,31 +45,58 @@ abstract class ModelAbstract
         }
     }
 
+    /**
+     * Returns model's fields
+     *
+     * @return array
+     */
     public abstract function fields() : array;
 
+    /**
+     * Returns model's table name
+     *
+     * @return string
+     */
     public abstract function getTableName() : string;
 
+    /**
+     * Returns model's class name
+     *
+     * @return string
+     */
     public abstract function getClassName() : string;
 
-    public function insert()
+    /**
+     * Inserts new row to model's table
+     */
+    public function insert() : void
     {
         $tableName = $this->getTableName();
         $this->connection->insert($tableName, $this->fields());
     }
 
-    public function save()
+    /**
+     * Saves model to database
+     */
+    public function save() : void
     {
         $tableName = $this->getTableName();
         $this->connection->update($tableName, $this->fields(), $this->id);
     }
 
-    public function countAll()
+    public function countAll() : int
     {
         $tableName = $this->getTableName();
         return $this->connection->count($tableName);
     }
 
-    public function findOne(array $fields)
+    /**
+     * Finds one model's entity in database
+     *
+     * @param array $fields
+     * @return mixed
+     */
+    public function findOne(array $fields) : ?ModelAbstract
     {
         return $this->connection->select()
             ->from($this->getTableName())
@@ -59,6 +104,14 @@ abstract class ModelAbstract
             ->execute($this->getClassName())[0];
     }
 
+    /**
+     * Finds list of model's entities in database
+     *
+     * @param int|null $limit
+     * @param int|null $offset
+     * @param array $order
+     * @return ModelAbstract[]|bool|null
+     */
     public function findAll(int $limit = null, int $offset = null, array $order = ['ID ASC'])
     {
         return $this->connection->select()
@@ -69,6 +122,12 @@ abstract class ModelAbstract
             ->execute($this->getClassName());
     }
 
+    /**
+     * Loads data to model
+     *
+     * @param array $parameters
+     * @return bool
+     */
     public function load(array $parameters) : bool
     {
         foreach ($parameters as $key => $parameter) {
@@ -80,6 +139,11 @@ abstract class ModelAbstract
         return true;
     }
 
+    /**
+     * Returns model's errors
+     *
+     * @return array|null
+     */
     public function getErrors() : ?array
     {
         if(isset($this->errors)) {

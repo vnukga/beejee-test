@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Database connection configuration
+ */
 return [
     'db' => [
         'driver' => 'mysql',

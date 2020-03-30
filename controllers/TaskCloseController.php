@@ -3,13 +3,20 @@
 
 namespace App\controllers;
 
-
 use App\models\Task;
 use App\src\ControllerAbstract;
 
+/**
+ * Class TaskCloseController
+ * Closes the task found by id
+ * @package App\controllers
+ */
 class TaskCloseController extends ControllerAbstract
 {
-    public function run()
+    /**
+     * Running the controller
+     */
+    public function run() : void
     {
         $id = $this->request->get('id');
         if($id){

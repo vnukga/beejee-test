@@ -1,20 +1,39 @@
 <?php
 
-
 namespace App\src\database;
-
 
 use Exception;
 use PDO;
 use PDOStatement;
 use stdClass;
 
+/**
+ * Class Connection
+ *
+ * Database connection
+ * @package App\src\database
+ */
 class Connection
 {
+    /**
+     * DBH class
+     *
+     * @var PDO
+     */
     private PDO $dbh;
 
+    /**
+     * Auery string
+     *
+     * @var string|null
+     */
     private ?string $query;
 
+    /**
+     * Query string prepared for value's binding
+     *
+     * @var PDOStatement|null
+     */
     private ?PDOStatement $preparedQuery;
 
     public function __construct(Config $config)
@@ -27,31 +46,63 @@ class Connection
         $this->preparedQuery = null;
     }
 
-    public function getDbh()
+    /**
+     * Returns DBH instance
+     *
+     * @return PDO
+     */
+    public function getDbh() : PDO
     {
         return $this->dbh;
     }
 
+    /**
+     * Executes an SQL statement, returning a result set as a PDOStatement object
+     *
+     * @param string $query
+     * @return false|PDOStatement
+     */
     public function query(string $query)
     {
         return $this->dbh->query($query);
     }
 
-    public function beginTransaction()
+    /**
+     * Begins transaction
+     *
+     * @return bool
+     */
+    public function beginTransaction() : bool
     {
         return $this->dbh->beginTransaction();
     }
 
-    public function commit()
+    /**
+     * Commits transaction
+     *
+     * @return bool
+     */
+    public function commit() : bool
     {
         return $this->dbh->commit();
     }
 
-    public function rollback()
+    /**
+     * Rolls back transaction
+     *
+     * @return bool
+     */
+    public function rollback() : bool
     {
         return $this->dbh->rollBack();
     }
 
+    /**
+     * Executes query inside a transaction
+     *
+     * @param string $query
+     * @return bool
+     */
     public function transactQuery(string $query) : bool
     {
         try {
@@ -65,7 +116,13 @@ class Connection
         }
     }
 
-    public function count(string $tableName)
+    /**
+     * Returns rows of $tablename table quantity
+     *
+     * @param string $tableName
+     * @return int
+     */
+    public function count(string $tableName) : int
     {
         $this->query = 'SELECT COUNT(*) ';
         $this->from($tableName);
@@ -74,6 +131,12 @@ class Connection
         return $count;
     }
 
+    /**
+     * Adds SELECT statement to query
+     *
+     * @param array|null $fields
+     * @return $this
+     */
     public function select(array $fields = null)
     {
         if(!$fields){
@@ -85,12 +148,24 @@ class Connection
         return $this;
     }
 
+    /**
+     * Adds FROM statement to query
+     *
+     * @param string $tableName
+     * @return $this
+     */
     public function from(string $tableName)
     {
         $this->query .= ' FROM ' . $tableName;
         return $this;
     }
 
+    /**
+     * Adds WHERE statement to query
+     *
+     * @param array $conditions
+     * @return $this
+     */
     public function where(array $conditions)
     {
         $conditionString = '';
@@ -101,6 +176,12 @@ class Connection
         return $this;
     }
 
+    /**
+     * Adds ORDER BY statement to query
+     *
+     * @param array $fields
+     * @return $this
+     */
     public function orderBy(array $fields)
     {
         $conditionString = '';
@@ -116,6 +197,12 @@ class Connection
         return $this;
     }
 
+    /**
+     * Adds LIMIT statement to query
+     *
+     * @param int|null $rowCount
+     * @return $this
+     */
     public function limit(int $rowCount = null)
     {
         if($rowCount) {
@@ -124,6 +211,12 @@ class Connection
         return $this;
     }
 
+    /**
+     * Adds OFFSET statement to query
+     *
+     * @param int|null $offset
+     * @return $this
+     */
     public function offset(int $offset = null)
     {
         if($offset) {
@@ -132,7 +225,13 @@ class Connection
         return $this;
     }
 
-    public function insert(string $table, array $values)
+    /**
+     * Insert new row to table
+     *
+     * @param string $table
+     * @param array $values
+     */
+    public function insert(string $table, array $values) : void
     {
         $this->prepareInsertQuery($table, $values);
         foreach ($values as $key => $value){
@@ -141,6 +240,13 @@ class Connection
         $this->execute();
     }
 
+    /**
+     * Updates row in table
+     *
+     * @param string $table
+     * @param array $values
+     * @param int $id
+     */
     public function update(string $table, array $values, int $id)
     {
         $this->prepareUpdateQuery($table, $values, $id);
@@ -150,13 +256,23 @@ class Connection
         $this->execute();
     }
 
-
+    /**
+     * Prepares query for value's binding
+     *
+     * @return $this
+     */
     public function prepare()
     {
         $this->preparedQuery = $this->dbh->prepare($this->query);
         return $this;
     }
 
+    /**
+     * Prepares query with INSERT statement
+     *
+     * @param string $table
+     * @param array $values
+     */
     private function prepareInsertQuery(string $table, array $values)
     {
         $this->query = 'INSERT INTO ' . $table . ' (';
@@ -168,6 +284,13 @@ class Connection
         $this->prepare();
     }
 
+    /**
+     * Prepares query with UPDATE statement
+     *
+     * @param string $table
+     * @param array $values
+     * @param int $id
+     */
     private function prepareUpdateQuery(string $table, array $values, int $id)
     {
         $this->query = 'UPDATE ' . $table . ' SET ';
@@ -180,6 +303,12 @@ class Connection
         $this->prepare();
     }
 
+    /**
+     * Executes query
+     *
+     * @param string $className
+     * @return array|bool|null
+     */
     public function execute($className = stdClass::class)
     {
         if(!$this->preparedQuery){
@@ -197,11 +326,23 @@ class Connection
         return false;
     }
 
+    /**
+     * Quotes value befor inserting
+     *
+     * @param string $query
+     * @return false|string
+     */
     private function quote(string $query)
     {
         return $this->dbh->quote($query);
     }
 
+    /**
+     * Returns type for value's binding
+     *
+     * @param $value
+     * @return int
+     */
     private function getBindType($value){
         switch(gettype($value)){
             case 'string':

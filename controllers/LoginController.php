@@ -7,11 +7,23 @@ namespace App\controllers;
 use App\src\Application;
 use App\src\ControllerAbstract;
 
+/**
+ * Class LoginController
+ * Logging user in
+ * @package App\controllers
+ */
 class LoginController extends ControllerAbstract
 {
+    /**
+     * Login errors
+     * @var array
+     */
     private array $errors;
 
-    public function run()
+    /**
+     * Running the controller
+     */
+    public function run() : void
     {
         if(!$this->request->isPost()){
             $this->render('login');

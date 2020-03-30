@@ -6,11 +6,25 @@ namespace App\controllers;
 use App\models\Task;
 use App\src\ControllerAbstract;
 
+/**
+ * Class TaskCreateController
+ * Creates new task
+ *
+ * @package App\controllers
+ */
 class TaskCreateController extends ControllerAbstract
 {
+    /**
+     * Creation form error's
+     *
+     * @var array
+     */
     private array $errors;
 
-    public function run()
+    /**
+     * Running the controller
+     */
+    public function run() : void
     {
         if(!$this->request->isPost()){
             $this->render('task-create');

@@ -2,6 +2,10 @@
 
 use App\src\Application;
 
+/**
+ * command for applying migration
+ * use 'php console/migrate.php' in CLI-mode
+ */
 $root = __DIR__ . '/../';
 
 require $root . 'vendor/autoload.php';

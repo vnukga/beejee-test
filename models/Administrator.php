@@ -7,14 +7,36 @@ use App\src\Application;
 use App\src\ModelAbstract;
 use App\src\UserInterface;
 
+/**
+ * Class Administrator
+ * Administrator entity model
+ * @package App\models
+ */
 class Administrator extends ModelAbstract implements UserInterface
 {
-    public $login;
+    /**
+     * Administrator's login
+     * @var string
+     */
+    public string $login;
 
-    private $password_hash;
+    /**
+     * Password's hash for administrator's authentication
+     * @var string
+     */
+    private string $password_hash;
 
+    /**
+     * If site's user is guest
+     * @var bool
+     */
     private $isGuest = true;
 
+    /**
+     * Returns model's fields
+     *
+     * @return array
+     */
     public function fields(): array
     {
         return [
@@ -23,16 +45,32 @@ class Administrator extends ModelAbstract implements UserInterface
         ];
     }
 
+    /**
+     * Returns the name of administrators table
+     *
+     * @return string
+     */
     public function getTableName(): string
     {
         return 'administrators';
     }
 
+    /**
+     * Returns self classname
+     *
+     * @return string
+     */
     public function getClassName(): string
     {
         return self::class;
     }
 
+    /**
+     * Creates administrator's entity
+     *
+     * @param string $login
+     * @param string $password
+     */
     public function create(string $login, string $password)
     {
         $this->login = $login;
@@ -41,16 +79,33 @@ class Administrator extends ModelAbstract implements UserInterface
         echo 'Администратор с логином ' . $login . ' успешно создан!';
     }
 
+    /**
+     * Sets password for administrator
+     *
+     * @param string $password
+     */
     private function setPassword(string $password)
     {
         $this->password_hash = password_hash($password, PASSWORD_DEFAULT);
     }
 
+    /**
+     * Verifies password from login form
+     *
+     * @param string $password
+     * @return bool
+     */
     public function verifyPassword(string $password) : bool
     {
         return password_verify($password, $this->password_hash);
     }
 
+    /**
+     * Logs user in
+     *
+     * @param string $login
+     * @param string $password
+     */
     public function login(string $login, string $password): void
     {
         $administrator = $this->findOne(['login' => $login]);
@@ -66,22 +121,20 @@ class Administrator extends ModelAbstract implements UserInterface
         }
     }
 
-    private function setErrors() : void
-    {
-        $this->errors = [
-            'login' => 'Логин или пароль введены неверно!',
-            'password' => ''
-        ];
-    }
-
-
-
+    /**
+     * Logs current user out
+     */
     public function logout() : void
     {
         $this->isGuest = true;
         Application::app()->getRequest()->session()->finishUserSession();
     }
 
+    /**
+     * Returns if user is guest
+     *
+     * @return bool
+     */
     public function isGuest() : bool
     {
         if(Application::app()->getRequest()->session()->getUserSession()){
@@ -90,13 +143,34 @@ class Administrator extends ModelAbstract implements UserInterface
         return $this->isGuest;
     }
 
+    /**
+     * Sets $isGuest value
+     *
+     * @param bool $isGuest
+     */
     public function setIsGuest(bool $isGuest) : void
     {
         $this->isGuest = $isGuest;
     }
 
+    /**
+     * Returns username of current user
+     *
+     * @return string|null
+     */
     public function getUsername() : ?string
     {
-        return $this->login;
+        return $this->login ?? null;
+    }
+
+    /**
+     * Sets validation errors
+     */
+    private function setErrors() : void
+    {
+        $this->errors = [
+            'login' => 'Логин или пароль введены неверно!',
+            'password' => ''
+        ];
     }
 }

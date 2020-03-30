@@ -12,12 +12,31 @@ use App\src\Exceptions\ControllerNotFoundException;
 use App\src\Exceptions\NotAuthorizedException;
 use App\src\filters\FilterInterface;
 
+/**
+ * Class Router
+ * @package App\src\http
+ */
 class Router
 {
+    /**
+     * Application's route
+     *
+     * @var string|null
+     */
     private string $route;
 
+    /**
+     * Request instance
+     *
+     * @var Request
+     */
     private Request $request;
 
+    /**
+     * Controller's instance
+     *
+     * @var ControllerAbstract
+     */
     private ControllerAbstract $controller;
 
     public function __construct()
@@ -27,6 +46,9 @@ class Router
 
     }
 
+    /**
+     * Handles request
+     */
     public function handle() : void
     {
         try {
@@ -42,7 +64,13 @@ class Router
         $this->controller->run();
     }
 
-    private function filter()
+    /**
+     * Filters request
+     *
+     * @return bool
+     * @throws NotAuthorizedException
+     */
+    private function filter() : bool
     {
         $filters = $this->getFilters();
         foreach ($filters as $filter) {
@@ -54,6 +82,8 @@ class Router
     }
 
     /**
+     * Returns filters list
+     *
      * @return FilterInterface[]
      */
     public function getFilters() : array
@@ -65,11 +95,21 @@ class Router
         return $filters;
     }
 
+    /**
+     * Returns Request instance
+     *
+     * @return Request
+     */
     public function getRequest() : Request
     {
         return $this->request;
     }
 
+    /**
+     * Sets controller for application's route
+     *
+     * @throws ControllerNotFoundException
+     */
     private function setControllerFromRoute() : void
     {
         if(strlen($this->route) > 0) {
@@ -81,6 +121,11 @@ class Router
         }
     }
 
+    /**
+     * Returns controller's name from application's route
+     *
+     * @return string
+     */
     private function getControllerNameFromRoute() : string
     {
         $controllerName = implode('', explode( '-', ucwords($this->route, '-')));
