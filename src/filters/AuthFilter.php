@@ -13,9 +13,9 @@ class AuthFilter implements FilterInterface
 
     private array $permissions;
 
-    public function __construct()
+    public function __construct(array $config)
     {
-        $this->config = Application::app()->getFilterConfig('authFilter');
+        $this->config = $config;
     }
 
     public function run(string $route) : bool
@@ -23,8 +23,8 @@ class AuthFilter implements FilterInterface
         $this->role = Application::app()->getUser()->isGuest() ? 'guest' : 'user';
         $this->permissions = $this->config['permissions'];
         if(!$this->permissions[$this->role]){
-            return false;
+            return true;
         }
-        return in_array($route, $this->permissions[$this->role]);
+        return !in_array($route, $this->permissions[$this->role]);
     }
 }

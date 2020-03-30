@@ -78,6 +78,11 @@ class Request
         return $this->urlPrefix . $this->domain;
     }
 
+    public function getPreviousUrl()
+    {
+        return $this->server['HTTP_REFERER'];
+    }
+
     public function isPost() : bool
     {
         return $this->server['REQUEST_METHOD'] === 'POST' ? true : false;

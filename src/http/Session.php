@@ -30,4 +30,19 @@ class Session
     {
         return $this->values['user'];
     }
+
+    public function set(string $name, string $value)
+    {
+        $_SESSION[$name] = $value;
+    }
+
+    public function get(string $name)
+    {
+        return $_SESSION[$name];
+    }
+
+    public function unset(string $name)
+    {
+        unset($_SESSION[$name]);
+    }
 }

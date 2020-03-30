@@ -12,6 +12,7 @@ class LogoutController extends ControllerAbstract
     {
         $user = Application::app()->getUser();
         $user->logout();
-        $this->response->redirect('/index');
+        $refererUrl = $this->request->getPreviousUrl();
+        $this->response->redirect($refererUrl);
     }
 }

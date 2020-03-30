@@ -13,11 +13,7 @@ class Administrator extends ModelAbstract implements UserInterface
 
     private $password_hash;
 
-    private $auth_key;
-
     private $isGuest = true;
-
-    private array $errors;
 
     public function fields(): array
     {
@@ -32,7 +28,7 @@ class Administrator extends ModelAbstract implements UserInterface
         return 'administrators';
     }
 
-    public function class(): string
+    public function getClassName(): string
     {
         return self::class;
     }
@@ -78,13 +74,7 @@ class Administrator extends ModelAbstract implements UserInterface
         ];
     }
 
-    public function getErrors() : ?array
-    {
-        if(isset($this->errors)) {
-            return $this->errors;
-        }
-        return null;
-    }
+
 
     public function logout() : void
     {

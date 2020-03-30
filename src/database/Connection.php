@@ -4,6 +4,7 @@
 namespace App\src\database;
 
 
+use Exception;
 use PDO;
 use PDOStatement;
 use stdClass;
@@ -58,10 +59,19 @@ class Connection
             $this->query($query);
             $this->commit();
             return true;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $this->rollback();
             return false;
         }
+    }
+
+    public function count(string $tableName)
+    {
+        $this->query = 'SELECT COUNT(*) ';
+        $this->from($tableName);
+        $count = $this->dbh->query($this->query)->fetch()[0];
+        $this->query = null;
+        return $count;
     }
 
     public function select(array $fields = null)
@@ -106,11 +116,36 @@ class Connection
         return $this;
     }
 
+    public function limit(int $rowCount = null)
+    {
+        if($rowCount) {
+            $this->query .= ' LIMIT ' . $rowCount;
+        }
+        return $this;
+    }
+
+    public function offset(int $offset = null)
+    {
+        if($offset) {
+            $this->query .= ' OFFSET ' . $offset;
+        }
+        return $this;
+    }
+
     public function insert(string $table, array $values)
     {
         $this->prepareInsertQuery($table, $values);
         foreach ($values as $key => $value){
-            $this->preparedQuery->bindValue(':' . $key, $value);
+            $this->preparedQuery->bindValue(':' . $key, $value, $this->getBindType($value));
+        }
+        $this->execute();
+    }
+
+    public function update(string $table, array $values, int $id)
+    {
+        $this->prepareUpdateQuery($table, $values, $id);
+        foreach ($values as $key => $value){
+            $this->preparedQuery->bindValue(':' . $key, $value, $this->getBindType($value));
         }
         $this->execute();
     }
@@ -133,6 +168,18 @@ class Connection
         $this->prepare();
     }
 
+    private function prepareUpdateQuery(string $table, array $values, int $id)
+    {
+        $this->query = 'UPDATE ' . $table . ' SET ';
+        $fields = array_keys($values);
+        foreach ($fields as &$field) {
+            $field .= ' = :' . $field;
+        }
+        $this->query .= implode(',', $fields);
+        $this->query .= ' WHERE id = ' . $id;
+        $this->prepare();
+    }
+
     public function execute($className = stdClass::class)
     {
         if(!$this->preparedQuery){
@@ -141,7 +188,7 @@ class Connection
             if(!$result) {
                 return null;
             }
-            return $result->fetchObject($className);
+            return $result->fetchAll(PDO::FETCH_CLASS, $className);
         }
         if($this->preparedQuery->execute()){
             $this->preparedQuery = null;
@@ -163,6 +210,11 @@ class Connection
             case 'integer':
                 return PDO::PARAM_INT;
                 break;
+            case 'boolean':
+                return PDO::PARAM_BOOL;
+                break;
+            default:
+                return PDO::PARAM_STR;
         }
     }
 }

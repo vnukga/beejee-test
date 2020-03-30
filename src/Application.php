@@ -6,8 +6,7 @@ use App\models\Administrator;
 use App\src\database\Config;
 use App\src\database\Connection;
 use App\src\database\Migration;
-use App\src\filters\FilterInterface;
-use App\src\http\Request;
+use App\src\http\Router;
 
 class Application
 {
@@ -19,9 +18,7 @@ class Application
 
     private Connection $connection;
 
-    private Request $request;
-
-    private ControllerAbstract $controller;
+    private Router $router;
 
     private UserInterface $user;
 
@@ -31,7 +28,7 @@ class Application
         $this->controllersNamespace = $config['controllersNamespace'];
         $dbConfig = $this->config['db'];
         $this->connection = new Connection(new Config($dbConfig));
-        $this->request = new Request();
+        $this->router = new Router();
         $this->user = new Administrator($this->connection);
     }
 
@@ -50,48 +47,19 @@ class Application
 
     public function run()
     {
-        $route = $this->request->getRoute() ?? 'index';
         $this->authorizeUserFromSession();
-        $this->setControllerFromRoute($route);
-        if($this->filter($route) && $route !== 'index') {
-            $this->controller->getResponse()->redirect('/index');
-        } else {
-            $this->controller->run();
-        }
+        $this->router->handle();
     }
 
     private function authorizeUserFromSession() : void
     {
-        if($login = $this->request->session()->getUserSession()){
+        if($login = $this->getRequest()->session()->getUserSession()){
             $user = $this->user->findOne(['login' => $login]);
             if($user){
                 $this->user = $user;
                 $this->user->setIsGuest(true);
             }
         }
-    }
-
-    private function filter(string $route)
-    {
-        $filters = $this->getFilters();
-        foreach ($filters as $filter) {
-            if($filter->run($route)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @return FilterInterface[]
-     */
-    public function getFilters()
-    {
-        $filters = [];
-        foreach ($this->config['filters'] as $filter){
-            $filters[] = new $filter['class'];
-        }
-        return $filters;
     }
 
     public function getConnection()
@@ -101,17 +69,12 @@ class Application
 
     public function getRequest()
     {
-        return $this->request;
+        return $this->router->getRequest();
     }
 
     public function getUser()
     {
         return $this->user;
-    }
-
-    public function getFilterConfig(string $filter)
-    {
-        return $this->config['filters'][$filter];
     }
 
     public function getMigrations() : array
@@ -128,19 +91,12 @@ class Application
         return $migrationList;
     }
 
-    private function setControllerFromRoute(string $route) : void
+    /**
+     * @param string $parameter
+     * @return array|string|null
+     */
+    public function getConfigParameter(string $parameter)
     {
-        if(strlen($route) > 0) {
-            $controllerName = $this->getControllerNameFromRoute($route);
-            $this->controller = new $controllerName($route);
-        }
-    }
-
-    private function getControllerNameFromRoute(string $route)
-    {
-        $controllerName = implode('', explode( '-', ucwords($route, '-')));
-        $controllerName .= 'Controller';
-        $controllerName = $this->controllersNamespace . $controllerName;
-        return $controllerName;
+        return $this->config[$parameter];
     }
 }

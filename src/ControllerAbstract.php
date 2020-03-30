@@ -22,13 +22,13 @@ abstract class ControllerAbstract
         $this->id = $id;
         $this->response = new Response();
         $this->request = Application::app()->getRequest();
-        $this->view = new View();
+        $this->view = new View($this->response);
     }
 
     public function run()
     {
         $view = strtolower(substr(basename(get_called_class()), 0, -10));
-        $this->render('index');
+        $this->render($view);
     }
 
     public function getId()

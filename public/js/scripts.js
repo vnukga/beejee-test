@@ -1,4 +1,5 @@
 $(document).ready(validateLoginForm());
+$(document).ready(validateTaskCreateForm());
 
 function validateLoginForm() {
     let form = $('#login-form');
@@ -21,9 +22,34 @@ function validateLoginForm() {
     });
 }
 
+function validateTaskCreateForm() {
+    let form = $('#task-create-form');
+    form.submit(function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: '/task-create',
+            data: $(this).serialize(),
+            success: function(response)
+            {
+                let success = response.success;
+                if (success === undefined && response.errors === true) {
+                    showValidationErrors(form, response);
+                }
+                if (success === true)
+                    redirectToIndex();
+            }
+        })
+    });
+}
+
 
 function showValidationErrors(form, response) {
     form.find('input').each(function (index, el) {
+        $(this).removeClass('is-invalid');
+        $(this).parent().children('.invalid-feedback').remove();
+    });
+    form.find('textarea').each(function (index, el) {
         $(this).removeClass('is-invalid');
         $(this).parent().children('.invalid-feedback').remove();
     });
